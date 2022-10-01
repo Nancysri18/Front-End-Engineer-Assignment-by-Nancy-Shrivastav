@@ -4,12 +4,65 @@
 
 Based on the code below answer the following queries:
 1. Explain what the simple `List` component does.
+
+=>In websites, occasionally we want our data to be displayed in ordered format (as it is quite more proficient) and this can be done by using List.
+In the below code, List component do the following things :
+
+It consists of List Items wrapped in WrappedSingleListItem having state isSelected and values as text and index, and event named onClickHandler, on which further, these are memoized under memo(WrappedListComponent) which basically remembers the arguments that has been passed with the results and if it is passed with same arguments, then thus it will return the result directly from memory.
+
+It uses map() method, to call a function for each element in that array, and it stores the listed items under array items.
+And side by side the background color of the passed text is changing with respect to their state, like if state is true(selected list items) it will show green and red for non selected items.
+
 2. What problems / warnings are there with code?
+
+=>Function shapeOf and array error, as they are not functions
+It was initially declared as:
+
+ WrappedListComponent.propTypes = {
+    items: PropTypes.array(PropTypes.shapeOf({
+         text: PropTypes.string.isRequired,
+ })),
+ };
+instead of shapeOf and array we have to use shape and arrayOf respectively.
+
+Resolved:
+
+  WrappedListComponent.propTypes = {
+       items: PropTypes.arrayOf(PropTypes.shape({ 
+           text: PropTypes.string.isRequired,
+   })),
+   };
+Error: Cannot read properties of null (reading 'map'),
+Error in statement:
+WrappedListComponent.defaultProps = { items: null, };
+
+As map() method was called and by default we have declared it as null due to which it is throwing an error. Thus to remove this error initialise the array items with some default values.
+
+Resolved:
+WrappedListComponent.defaultProps = { items: [{text: "Default List Name 1", index:1}, {text: "Default List Name 2", index:2}, {text: "Default List Name 3", index:3}, {text: "Default List Name 4", index:4}, {text: "Default List Name 5", index:5}], };
+
+Error in declaring selectedIndex, it was throwing an error of React Hook useEffect has a missing dependency: 'setSelectedIndex'
+Error in statement:
+const [setSelectedIndex, selectedIndex] = useState();
+
+Resolved:
+const [selectedIndex, setSelectedIndex] = useState('');
+
+We have to first declare selectedIndex and then setSelectedIndex.
+
+Error: Invalid prop isSelected of type string supplied to WrappedSingleListItem, expected boolean.
+We have initialised propType of isSelected as bool but we are declaring it with a string value due to which it is throwing an error.
+Error in statement: const handleClick = index => { setSelectedIndex(index); };
+
+Resolved:
+
+const handleClick = index => { setSelectedIndex(true); };
+
+
 3. Please fix, optimize, and/or modify the component as much as you think is necessary.
 
 ## Code
 
-```javascript
 
 import React, { useState, useEffect, memo } from 'react';
 import PropTypes from 'prop-types';
@@ -44,14 +97,14 @@ const SingleListItem = memo(WrappedSingleListItem);
 const WrappedListComponent = ({
   items,
 }) => {
-  const [setSelectedIndex, selectedIndex] = useState();
+    const [selectedIndex, setSelectedIndex] = useState('');  /*Error resolved*/
 
   useEffect(() => {
     setSelectedIndex(null);
   }, [items]);
 
   const handleClick = index => {
-    setSelectedIndex(index);
+    setSelectedIndex(true);  /*Error resolved*/
   };
 
   return (
@@ -69,18 +122,20 @@ const WrappedListComponent = ({
 };
 
 WrappedListComponent.propTypes = {
-  items: PropTypes.array(PropTypes.shapeOf({
+  items: PropTypes.arrayOf(PropTypes.shape({         /*Error resolved*/
     text: PropTypes.string.isRequired,
   })),
 };
 
 WrappedListComponent.defaultProps = {
-  items: null,
-};
+    items: [{text: "Default List Name 1", index:1}, {text: "Default List Name 2", index:2}, {text: "Default List Name 3", index:3}, {text: "Default List Name 4", index:4}, {text: "Default List Name 5", index:5}],   /*Error resolved*/
+  };
 
 const List = memo(WrappedListComponent);
 
+
 export default List;
+
 
 
 ```
